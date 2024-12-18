@@ -1,0 +1,85 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #1a5f7a;
+    color: #fff;
+    text-align: center;
+    padding: 1rem;
+}
+
+main {
+    width: calc(100% - 100px);
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+section {
+    background-color: #fff;
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+h1, h2 {
+    color: #1a5f7a;
+}
+
+.football-field {
+    background-color: #4caf50;
+    height: 200px;
+    position: relative;
+    overflow: hidden;
+}
+
+.football-field::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #fff;
+}
+
+.tableauPlaceholder {
+    width: 100% !important;
+    margin: 0 auto;
+    display: block;
+}
+
+.tableauViz {
+    width: 100% !important;
+    margin: 0 auto;
+    display: block;
+}
+
+object {
+    width: 100% !important;
+    margin: 0 auto;
+}
+iframe {
+    max-width: 100%;
+    margin: 0 auto;
+    display: block;
+}
+.content-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.toc {
+    flex: 1;
+}
+
+.football-image {
+    margin-right: 300px; /* Adds some space between the TOC and the image */
+}

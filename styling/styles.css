@@ -1,0 +1,20 @@
+.mainbg {
+    background-image: url('../images/byu_mountains.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    height: 500px;
+  }
+
+  .white-thick-text {
+    color: white;
+    font-weight: 600; /* Thicker than normal */
+}
+
+.card {
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}

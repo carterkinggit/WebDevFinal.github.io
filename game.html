@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QB Challenge</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #87CEEB;
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            font-size: 48px;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+        canvas {
+            border: 1px solid #000;
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>QB Challenge!!</h1>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let football = { x: 50, y: 300, velocity: 0, gravity: 0.5, jump: -7, width: 30, height: 18 };
+        let pipes = [];
+        let score = 0;
+        let highScore = localStorage.getItem('qbChallengeHighScore') || 0;
+        let gameOver = false;
+        let frames = 0;
+        let popupTimer = 0;
+        let currentPopup = null;
+
+        const successMessages = ['NICE THROW', 'FIRST DOWN', 'TOUCHDOWN'];
+
+        function getSuccessMessage() {
+            return successMessages[Math.floor(Math.random() * successMessages.length)];
+        }
+
+        function displayPopup(message, isSuccess) {
+            currentPopup = { message, isSuccess };
+            popupTimer = 120; // Display for 120 frames (about 2 seconds at 60fps)
+        }
+
+        function drawPopup() {
+            if (popupTimer > 0 && currentPopup) {
+                ctx.fillStyle = currentPopup.isSuccess ? 'rgba(0, 255, 0, 0.7)' : 'rgba(255, 0, 0, 0.7)';
+                ctx.fillRect(canvas.width / 4, canvas.height / 2 - 50, canvas.width / 2, 100);
+                ctx.fillStyle = 'white';
+                ctx.font = '30px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(currentPopup.message, canvas.width / 2, canvas.height / 2 + 10);
+                popupTimer--;
+            }
+        }
+
+        function drawFootball(x, y, width, height) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(football.velocity * 0.1);
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, width / 2, height / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-width / 4, -height / 4);
+            ctx.lineTo(width / 4, -height / 4);
+            for (let i = -3; i <= 3; i++) {
+                ctx.moveTo(i * 2, -height / 4);
+                ctx.lineTo(i * 2, -height / 8);
+            }
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawPipe(x, y, width, height, isTop) {
+            ctx.fillStyle = '#00A86B';
+            ctx.fillRect(x, isTop ? 0 : y, width, height);
+            ctx.strokeStyle = '#008C59';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(x, isTop ? 0 : y, width, height);
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            football.velocity += football.gravity;
+            football.y += football.velocity;
+            
+            drawFootball(football.x, football.y, football.width, football.height);
+            
+            if (frames % 100 === 0) {
+                let pipeHeight = Math.random() * (canvas.height - 250) + 100;
+                pipes.push({ x: canvas.width, y: canvas.height - pipeHeight, width: 60, height: pipeHeight, passed: false });
+            }
+            
+            pipes.forEach((pipe, index) => {
+                pipe.x -= 2;
+                drawPipe(pipe.x, pipe.y, pipe.width, pipe.height, false);
+                drawPipe(pipe.x, 0, pipe.width, pipe.y - 150, true);
+                
+                if (football.x + football.width / 2 > pipe.x && football.x - football.width / 2 < pipe.x + pipe.width) {
+                    if (football.y + football.height / 2 > pipe.y || football.y - football.height / 2 < pipe.y - 150) {
+                        gameOver = true;
+                        displayPopup('INCOMPLETE', false);
+                    } else if (football.x > pipe.x + pipe.width && !pipe.passed) {
+                        score++;
+                        pipe.passed = true;
+                        displayPopup(getSuccessMessage(), true);
+                    }
+                }
+                
+                if (pipe.x + pipe.width < 0) {
+                    pipes.splice(index, 1);
+                }
+            });
+            
+            ctx.fillStyle = 'black';
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Score: ${score}`, 10, 30);
+            ctx.fillText(`High Score: ${highScore}`, 10, 60);
+            
+            if (football.y + football.height / 2 > canvas.height || football.y - football.height / 2 < 0) {
+                gameOver = true;
+                displayPopup('INCOMPLETE', false);
+            }
+            
+            drawPopup();
+            
+            if (gameOver) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'white';
+                ctx.font = '48px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2 - 50);
+                ctx.font = '24px Arial';
+                ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
+                ctx.fillText(`High Score: ${highScore}`, canvas.width / 2, canvas.height / 2 + 50);
+                ctx.fillText('Press Space to Restart', canvas.width / 2, canvas.height / 2 + 100);
+                
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('qbChallengeHighScore', highScore);
+                }
+                return;
+            }
+            
+            frames++;
+            requestAnimationFrame(gameLoop);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                if (gameOver) {
+                    football.y = 300;
+                    football.velocity = 0;
+                    pipes = [];
+                    score = 0;
+                    gameOver = false;
+                    popupTimer = 0;
+                    currentPopup = null;
+                    gameLoop();
+                } else {
+                    football.velocity = football.jump;
+                }
+            }
+        });
+
+        gameLoop();
+    </script>
+</body>
+</html>
